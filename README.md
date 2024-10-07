@@ -1,19 +1,27 @@
-# 🎈 Blank app template
+# SEPSIS Cohort Script Change Tracker
 
-A simple Streamlit app template for you to modify!
+This is a web-based tool designed to monitor changes to SQL scripts used in the Rediscover-ICU study, particularly focused on SEPSIS cohort curation. It fetches and compares the latest SQL script from GitHub and highlights the differences between the baseline version and the live version, explaining the changes in simple terms.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+## Features
+- Automatically fetches the SEPSIS cohort curation SQL script from GitHub.
+- Compares the baseline (permalink) with the most recent version in the main branch.
+- Highlights added, removed, or changed lines.
+- Provides a layman-friendly explanation of changes.
+- Ideal for technical and non-technical users involved in the Rediscover-ICU project.
 
-### How to run it on your own machine
+## How to Access the Live Application
 
-1. Install the requirements
+You can access the live SEPSIS Cohort Script Change Tracker application by clicking the link below:
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+[**Open the SEPSIS Cohort Script Change Tracker**](https://rediscover.streamlit.app/)
 
-2. Run the app
+This will open the app directly in your browser.
 
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+## How to run it on your own machine
+
+If you prefer to run the app locally on your machine, follow these steps:
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/LhallTDI/RediscoverICU.git
+   cd RediscoverICU
