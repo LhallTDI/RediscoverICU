@@ -27,12 +27,12 @@ def compare_versions(baseline, updated):
 def explain_changes(diff):
     added = [line[2:] for line in diff if line.startswith("+ ")]
     removed = [line[2:] for line in diff if line.startswith("- ")]
-    
+
     explanation = ""
     if added:
-        explanation += "New lines added:\n" + "\n.join(added) + "\n\n"
+        explanation += "New lines added:\n" + "\n".join(added) + "\n\n"
     if removed:
-        explanation += "Lines removed:\n" + "\n.join(removed)
+        explanation += "Lines removed:\n" + "\n".join(removed)
     return explanation if explanation else "No significant changes."
 
 # Streamlit GUI
