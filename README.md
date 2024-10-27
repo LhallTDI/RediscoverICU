@@ -1,5 +1,4 @@
-# SEPSIS Cohort Script Change Tracker
-
+# Sespsis Script Synchronizer
 This is a web-based tool designed to monitor changes to SQL scripts used in the Rediscover-ICU study, particularly focused on SEPSIS cohort curation. It fetches and compares the latest SQL script from GitHub and highlights the differences between the baseline version and the live version, explaining the changes in simple terms.
 
 ## Features
@@ -17,7 +16,7 @@ You can access the live SEPSIS Cohort Script Change Tracker application by click
 
 This will open the app directly in your browser.
 
-## How to run it on your own machine
+## Running it on your own machine
 
 If you prefer to run the app locally on your machine, follow these steps:
 
