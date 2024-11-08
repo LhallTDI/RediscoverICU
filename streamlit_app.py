@@ -1,16 +1,17 @@
 import streamlit as st
 import requests
 import difflib
+from transformers import pipeline  # Import the summarization pipeline
 
 # Define URLs for each script type
 SCRIPTS = {
-    "Cohort Script": "https://raw.githubusercontent.com/OHDSI/CureIdRegistry/main/Cohort%20curation%20scripts/SEPSIS/01A_SEPSIS_Cohort_V4.sql",
-    "Ingredient Script": "https://example.com/ingredient_script.sql",
-    "Unmapped Drugs Script": "https://example.com/unmapped_drugs_script.sql",
-    "Mapped Drug Script": "https://example.com/mapped_drug_script.sql",
-    "Measurements Script": "https://example.com/measurements_script.sql",
-    "Device Script": "https://example.com/device_script.sql",
-    "Condition Script": "https://example.com/condition_script.sql"
+    "Cohort Script": "https://github.com/LhallTDI/RediscoverICU/blob/141fd9ccaf1f5fbbb8e2985f9e16b769c9c6fe40/Baseline%20Scripts/B_SEPSIS_Cohort.sql",
+    "Ingredient Script": "https://github.com/LhallTDI/RediscoverICU/blob/141fd9ccaf1f5fbbb8e2985f9e16b769c9c6fe40/Baseline%20Scripts/B_SEPSIS_INGREDIENT_Profile.sql",
+    "Unmapped Drugs Script": "https://github.com/LhallTDI/RediscoverICU/blob/141fd9ccaf1f5fbbb8e2985f9e16b769c9c6fe40/Baseline%20Scripts/B_SEPSIS_UNMAPPED_DRUG.sql",
+    "Mapped Drug Script": "https://github.com/LhallTDI/RediscoverICU/blob/141fd9ccaf1f5fbbb8e2985f9e16b769c9c6fe40/Baseline%20Scripts/B_SEPSIS_MAPPED_DRUG.sql",
+    "Measurements Script": "https://github.com/LhallTDI/RediscoverICU/blob/141fd9ccaf1f5fbbb8e2985f9e16b769c9c6fe40/Baseline%20Scripts/B_SEPSIS_MEASUREMENT.sql",
+    "Device Script": "https://github.com/LhallTDI/RediscoverICU/blob/141fd9ccaf1f5fbbb8e2985f9e16b769c9c6fe40/Baseline%20Scripts/B_SEPSIS_DEVICE.sql",
+    "Condition Script": "https://github.com/LhallTDI/RediscoverICU/blob/141fd9ccaf1f5fbbb8e2985f9e16b769c9c6fe40/Baseline%20Scripts/B_SEPSIS_CONDITION.sql"
 }
 
 # Fetching content from a given URL
@@ -28,50 +29,58 @@ def compare_versions(baseline, updated):
     diff = list(d.compare(baseline.splitlines(), updated.splitlines()))
     return diff
 
-# Explaining changes in simple terms
-def explain_changes(diff):
-    added = [line[2:] for line in diff if line.startswith("+ ")]
-    removed = [line[2:] for line in diff if line.startswith("- ")]
+# Initialize Hugging Face summarization pipeline
+summarizer = pipeline("summarization", model="t5-small")
 
-    explanation = ""
-    if added:
-        explanation += "New lines added:\n" + "\n".join(added) + "\n\n"
-    if removed:
-        explanation += "Lines removed:\n" + "\n".join(removed)
-    return explanation if explanation else "No significant changes."
+# Summarizing changes with Hugging Face, truncated to 512 characters
+def summarize_changes(diff):
+    diff_text = "\n".join(diff)
+    truncated_diff = diff_text[:512]  # Ensure input is within model's acceptable range
+    try:
+        summary = summarizer(truncated_diff, max_length=150, min_length=30, do_sample=False)
+        return summary[0]['summary_text']
+    except Exception as e:
+        return f"Error generating summary: {e}"
 
 # Streamlit app title and description
-st.title("Script Change Tracker")
+st.title("Script Change Tracker with AI-Powered Summaries")
 st.markdown("""
-Monitor the changes to the SQL scripts between updates. This tool compares the baseline SQL script with the latest version, highlighting key differences and explaining them in simple terms.
+Monitor the changes to the SQL scripts between updates. This tool compares the baseline SQL script with the latest version, highlights differences, and explains them in simple terms with AI support.
 """)
 
 # Dropdown menu for selecting script type
 script_type = st.selectbox("Select Script Type", list(SCRIPTS.keys()))
 
-# Defining the baseline permalink (hardcoded for demonstration, can be adapted)
+# Defining the baseline permalink
 BASELINE_URL = SCRIPTS[script_type]
-LIVE_URL = BASELINE_URL  # Placeholder for live URL; can be adapted for real-time live URLs
+LIVE_URL = BASELINE_URL  # Placeholder for real-time URLs
 
 # Fetching baseline and live versions of the SQL file
 baseline_sql = fetch_file_content(BASELINE_URL)
 live_sql = fetch_file_content(LIVE_URL)
 
-# Displaying the baseline and live content for reference
 if baseline_sql and live_sql:
-    st.subheader(f"Baseline Version - {script_type}")
-    st.code(baseline_sql, language='sql')
-    
-    st.subheader(f"Latest Version - {script_type}")
-    st.code(live_sql, language='sql')
-
     # Compare the baseline and live versions
     diff = compare_versions(baseline_sql, live_sql)
     
-    # Display differences
-    st.subheader("Changes Detected")
-    st.code("\n".join(diff), language='diff')
+    # Display AI-powered summary at the top
+    st.subheader("AI-Powered Summary of Changes")
+    st.text_area("Summary", summarize_changes(diff), height=150)
 
-    # Display explanation in layman's terms
-    st.subheader("Explanation of Changes (Layman's Terms)")
-    st.text_area("Layman's Explanation", explain_changes(diff), height=200)
+    # Display scripts and differences in a row with three columns
+    st.subheader("Scripts Comparison")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("**Baseline Script**")
+        st.code(baseline_sql[:300] + '...', language='sql')  # Show a truncated preview
+
+    with col2:
+        st.markdown("**Latest Script**")
+        st.code(live_sql[:300] + '...', language='sql')  # Show a truncated preview
+
+    with col3:
+        st.markdown("**Changes**")
+        st.code("\n".join(diff[:10]) + '...', language='diff')  # Show a truncated diff preview
+else:
+    st.warning("Failed to load SQL scripts for comparison.")
