@@ -89,3 +89,49 @@ if baseline_sql and live_sql:
         st.code("\n".join(diff[:10]) + '...', language='diff')  # Show a truncated diff preview
 else:
     st.warning("Failed to load SQL scripts for comparison.")
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_email(summary, diff_text):
+    recipient_email = "luke.c.hall.gr@dartmouth.edu"
+    subject = "Sepsis Script Changes and Summary"
+    
+    # Create the email content
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = recipient_email
+    message["Subject"] = subject
+
+    # Add the lay summary and script changes to the email
+    body = f"""
+    Here are the latest changes to the SQL script:
+
+    **Summary of Changes**:
+    {summary}
+
+    **Detailed Changes**:
+    {diff_text}
+    """
+    message.attach(MIMEText(body, "plain"))
+    
+    # Sending the email
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(message)
+        st.success("Email sent successfully to luke.c.hall.gr@dartmouth.edu!")
+    except Exception as e:
+        st.error(f"Failed to send email: {e}")
+
+# Button for email with the changes and summary
+if st.button("Send Changes to My Email"):
+    if baseline_sql and live_sql:
+        diff_text = "\n".join(compare_versions(baseline_sql, live_sql))
+        summary = summarize_changes(compare_versions(baseline_sql, live_sql))
+        send_email(summary, diff_text)
+    else:
+        st.warning("Unable to send email. Please ensure scripts are loaded successfully.")
+
