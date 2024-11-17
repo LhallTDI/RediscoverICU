@@ -12,7 +12,7 @@ This is a web-based tool designed to monitor changes to SQL scripts used in the 
 
 You can access the live SSS application by clicking the link below:
 
-[[**Open the SEPSIS Cohort Script Change Tracker**]]([url](https://rediscover.streamlit.app/))
+[[**Open the SEPSIS Cohort Script Change Tracker**]](https://rediscover.streamlit.app/)
 
 This will open the app directly in your browser.
 
