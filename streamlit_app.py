@@ -95,6 +95,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 def send_email(summary, diff_text):
+    sender_email = "rediscovericu@gmail.com"
+    sender_password = "R3discover!CU"   
     recipient_email = "luke.c.hall.gr@dartmouth.edu"
     subject = "Sepsis Script Changes and Summary"
     
