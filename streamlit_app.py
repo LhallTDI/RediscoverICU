@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import difflib
 from transformers import pipeline  
+import urllib.parse
 
 SCRIPTS = {
     "Cohort Script": "https://raw.githubusercontent.com/LhallTDI/RediscoverICU/refs/heads/main/Baseline%20Scripts/B_SEPSIS_Cohort.sql",
@@ -90,50 +91,51 @@ if baseline_sql and live_sql:
 else:
     st.warning("Failed to load SQL scripts for comparison.")
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+def generate_mailto_link(recipient, subject, body):
+    mailto_link = f"mailto:{recipient}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)}"
+    return mailto_link
 
-def send_email(summary, diff_text):
-    sender_email = "rediscovericu@gmail.com"
-    sender_password = "R3discover!CU"   
+if baseline_sql and live_sql:
+    diff = compare_versions(baseline_sql, live_sql)
+    summary = summarize_changes(diff)
+    diff_text = "\n".join(diff)
+
+    st.subheader("AI Summary of Changes")
+    st.text_area("Summary", summary, height=150)
+
+    st.subheader("Scripts Comparison")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("**Baseline Script**")
+        st.code(baseline_sql[:300] + '...', language='sql')
+
+    with col2:
+        st.markdown("**Latest Script**")
+        st.code(live_sql[:300] + '...', language='sql')
+
+    with col3:
+        st.markdown("**Changes**")
+        st.code("\n".join(diff[:10]) + '...', language='diff')
+
+    # Generate the mailto link
     recipient_email = "luke.c.hall.gr@dartmouth.edu"
     subject = "Sepsis Script Changes and Summary"
-    
-    # Create the email content
-    message = MIMEMultipart()
-    message["From"] = sender_email
-    message["To"] = recipient_email
-    message["Subject"] = subject
-
-    # Add the lay summary and script changes to the email
     body = f"""
     Here are the latest changes to the SQL script:
 
-    **Summary of Changes**:
+    Summary of Changes:
     {summary}
 
-    **Detailed Changes**:
+    Detailed Changes:
     {diff_text}
     """
-    message.attach(MIMEText(body, "plain"))
-    
-    # Sending the email
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.send_message(message)
-        st.success("Email sent successfully to luke.c.hall.gr@dartmouth.edu!")
-    except Exception as e:
-        st.error(f"Failed to send email: {e}")
 
-# Button for email with the changes and summary
-if st.button("Send Changes to My Email"):
-    if baseline_sql and live_sql:
-        diff_text = "\n".join(compare_versions(baseline_sql, live_sql))
-        summary = summarize_changes(compare_versions(baseline_sql, live_sql))
-        send_email(summary, diff_text)
-    else:
-        st.warning("Unable to send email. Please ensure scripts are loaded successfully.")
+    mailto_link = generate_mailto_link(recipient_email, subject, body)
+
+    # Button for Mailing
+    st.markdown(f'[📧 Send Changes via Email](mailto:{recipient_email}?subject={urllib.parse.quote(subject)}&body={urllib.parse.quote(body)})', unsafe_allow_html=True)
+else:
+    st.warning("Failed to load SQL scripts for comparison.")
+
 
