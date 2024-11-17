@@ -2,5 +2,3 @@ streamlit
 requests
 transformers
 torch
-email.mime.text 
-email.mime.multipart
