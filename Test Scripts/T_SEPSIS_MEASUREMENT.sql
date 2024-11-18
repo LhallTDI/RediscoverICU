@@ -1,7 +1,7 @@
 /*
 Filename:
 03C_SEPSIS_measurement_profile.sql
-I AM TESTING THIS CODE ON LINE 4
+
 Purpose:
 Generate a profile of measurement prevalence in the final Sepsis cohort
 
