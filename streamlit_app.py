@@ -55,7 +55,8 @@ def generate_mailto_link(recipient, subject, body):
 
 # Streamlit App
 st.title("Sepsis Script Synchronizer with AI Summaries")
-
+if st.button("Refresh Scripts"):
+    st.experimental_rerun()
 script_type = st.selectbox("Select Script Type", list(SCRIPTS.keys()))
 
 # Fetch URLs for baseline and live scripts
